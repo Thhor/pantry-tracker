@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+config.py
+pantry_rapport_*.html
+pantry_uge*.txt
