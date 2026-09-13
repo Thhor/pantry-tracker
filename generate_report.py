@@ -25,6 +25,7 @@ MAD_VARER = {
     "hørfrø", "solsikkekerner", "olivenolie", "kokosolie", "sojasauce",
     "eddike", "honning", "havremælk", "sojamælk", "mandelmælk",
     "peanutbutter", "mørk chokolade", "bouillon",
+    "mælk", "skyr", "bær",
 }
 HUSHOLDNING_VARER = {
     "toiletpapir", "køkkenrulle", "opvaskemiddel", "vaskemiddel",

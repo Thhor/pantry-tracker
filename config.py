@@ -192,6 +192,23 @@ VARER = {
         "enhed": "kg",
     },
 
+    # ── Mejeri ───────────────────────────────────────────────
+    "mælk": {
+        "include": ["letmælk", "sødmælk", "minimælk", "skummetmælk", "mælk"],
+        "exclude": ["soja", "havre", "mandel", "kokos", "pulver", "kondenseret", "fløde", "kærnemælk"],
+        "enhed": "l",
+    },
+    "skyr": {
+        "include": ["skyr"],
+        "exclude": ["drik", "smoothie"],
+        "enhed": "kg",
+    },
+    "bær": {
+        "include": ["jordbær", "blåbær", "hindbær", "brombær", "blandede bær", "mixed berries"],
+        "exclude": ["syltetøj", "marmelade", "saft", "juice", "nektar", "te", "is", "yoghurt"],
+        "enhed": "kg",
+    },
+
     # ── Mælkealternativer ────────────────────────────────────
     "havredrik": {
         "include": ["havre"],
