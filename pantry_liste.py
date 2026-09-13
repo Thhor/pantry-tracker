@@ -266,6 +266,52 @@ body {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* ── Butik-visning ──────────────────────────────────── */
+.butik-sektion { border-bottom: 2px solid var(--ink); padding: 28px 0 20px; }
+.butik-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding-left: 18px;
+  border-left: 5px solid;
+  margin-bottom: 14px;
+}
+.butik-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(22px, 3.5vw, 32px);
+  letter-spacing: -0.02em;
+}
+.tilbud-butik {
+  display: grid;
+  grid-template-columns: 160px 1fr 78px 84px 62px;
+  gap: 14px;
+  align-items: baseline;
+  padding: 7px 0;
+}
+.tilbud-butik + .tilbud-butik { border-top: 1px dotted var(--rule); }
+.vare-cat {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 620px) {
+  .tilbud-butik {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "cat pris" "navn norm" "blank dato";
+    row-gap: 2px;
+  }
+  .vare-cat  { grid-area: cat; }
+  .tilbud-butik .pris  { grid-area: pris; }
+  .tilbud-butik .navn  { grid-area: navn; }
+  .tilbud-butik .norm  { grid-area: norm; text-align: left; min-width: 0; }
+  .tilbud-butik .udlob { grid-area: dato; }
+}
 """
 
 JS = """
@@ -296,6 +342,85 @@ chips.forEach(c => c.addEventListener('click', () => {
   filtrer();
 }));
 """
+
+
+def generer_butik_html(alle_tilbud: list) -> str:
+    """Bygger HTML-siden med tilbud grupperet pr. butik, varer sorteret A-Å."""
+
+    pr_butik = defaultdict(list)
+    for t in alle_tilbud:
+        pr_butik[t["butik"]].append(t)
+
+    butiksnavne = sorted(pr_butik.keys(), key=_sorter_nøgle)
+
+    blokke = []
+    for butik in butiksnavne:
+        tilbud = sorted(pr_butik[butik], key=lambda t: _sorter_nøgle(t["vare"]))
+        farve = BUTIK_FARVER.get(butik, "#8A9A90")
+
+        rækker = []
+        for t in tilbud:
+            norm = (
+                f'{t["norm_pris"]:.2f} {t["norm_label"]}'.replace(".", ",")
+                if t.get("norm_pris")
+                else ""
+            )
+            udlob = (
+                f'<span class="udlob">{_kort_dato(t["gyldig_til"])}</span>'
+                if t.get("gyldig_til")
+                else '<span class="udlob"></span>'
+            )
+            rækker.append(
+                f'<div class="tilbud-butik">'
+                f'<span class="vare-cat">{t["vare"]}</span>'
+                f'<span class="navn">{t["navn"]}</span>'
+                f'<span class="pris">{_pris(t["pris"])}</span>'
+                f'<span class="norm">{norm}</span>'
+                f'{udlob}'
+                f'</div>'
+            )
+
+        antal = len(tilbud)
+        blokke.append(
+            f'<section class="butik-sektion">'
+            f'<div class="butik-head" style="border-left-color:{farve}">'
+            f'<h2 class="butik-title">{butik}</h2>'
+            f'<span class="vare-antal">{antal} tilbud</span>'
+            f'</div>'
+            f'{"".join(rækker)}'
+            f'</section>'
+        )
+
+    nu = datetime.now()
+    uge = nu.isocalendar().week
+    antal_butikker = len(butiksnavne)
+    antal_tilbud = len(alle_tilbud)
+
+    return f"""<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantry — uge {uge}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>{CSS}</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="logo">Pantry</div>
+    <div class="masthead-meta">
+      Uge {uge}, {nu.year}<br>
+      <b>{antal_tilbud}</b> tilbud i <b>{antal_butikker}</b> butikker<br>
+      Hentet {nu.strftime("%d.%m kl. %H:%M")}
+    </div>
+  </header>
+  {"".join(blokke)}
+</div>
+</body>
+</html>"""
 
 
 def generer_liste_html(alle_tilbud: list) -> str:
